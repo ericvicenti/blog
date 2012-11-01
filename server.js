@@ -3,12 +3,20 @@ var _ = require('underscore'),
 	express= require('express'),
 	auth = require('./auth.js'),
 	settings = require("./settings.js"),
-	db = require('./db.js');
+	db = require('./db.js'),
+	moment = require('moment');
+
+_.mixin({
+	trunc: function(s, n){
+		return s.substr(0,n-1)+(s.length>n?'&hellip;':'');
+	},
+	moment: moment
+});
 
 // Templating
 var templateDir = __dirname + '/templates/',
 	templateExt = '.html',
-	templates = ['index'],
+	templates = ['index','pages','login','profile','editPage'],
 	render = {};
 _.each(templates, function(name){
 	render[name] = _.template(String(fs.readFileSync(templateDir + name + templateExt)));
@@ -25,7 +33,9 @@ app.use(express.session({
 app.get('/login', function(req, res){
 	res.send(render.index({
 		title: 'Login',
-		content: '<a class="btn" href="/login/google?action='+((req.param('action') && req.param('action') != "") ? req.param('action') : "/pages")+'">Login with Google</a>'
+		content: render.login({
+			action: req.param('action')
+		})
 	}));
 });
 app.get('/login/google', function(req, res) {	
@@ -36,18 +46,62 @@ app.get('/login/google/cb', function(req, res) {
 });
 app.get('/profile', auth.requireGoogleAuth, function(req, res) {
 	auth.getGoogleProfile(req, res, function(user){
-		res.send('your id is '+user.id);
+		res.send(render.index({
+			title: 'Your Profile',
+			content: render.profile({
+				user: user
+			})
+		}));
 	});
 });
-app.get('/pages', auth.requireAuth, function(req, res){
-	db.getPages(10,0,function(err, pages){
+app.get('/pages',  function(req, res){
+	var page = Number(req.query.page);
+	page = page ? page : 0;
+	var page_size = 10;
+	console.log(page);
+	db.getPages(page_size, page*page_size,function(err, pages){
 		console.log('heyss');
-		console.log(pages);
-		res.send(JSON.stringify(pages));
+		res.send(render.index({
+			title: 'Blog Pages',
+			content: render.pages({
+				page: page,
+				page_size: page_size,
+				pages: pages
+			})
+		}));
+	});
+});
+app.get('/pages/new', function(req,res){
+	res.send(render.index({
+		title: 'edit page',
+		content: render.editPage({
+			page: {
+				title: 'new page',
+				body: 'no content yet'
+			}
+		})
+	}));
+});
+app.post('/pages/new', function(req,res){
+	console.log('posting new!!"!!')
+	res.send();
+});
+app.get('/edit*', function(req,res){
+	var path = req.url.split('/edit')[1];
+	db.getPage(path, true, function(err, page){
+		if(err){
+			return res.redirect('/pages');
+		}
+		res.send(render.index({
+			title: 'edit page',
+			content: render.editPage({
+				page: page
+			})
+		}));
 	});
 });
 app.use(function(req,res,next){
-	db.getPage(req.url, function(err, page){
+	db.getPage(req.url, false, function(err, page){
 		if(page){ // Page
 			res.send(render.index({
 				title: page.title,

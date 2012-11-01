@@ -1,11 +1,8 @@
 var settings = require("./settings.js"),
 	_ = require("underscore"),
+	moment = require("moment"),
 	sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database(':memory:');
-
-function getTimestamp(){
-	return Math.floor((+(new Date))/1000);
-}
 
 function getPages(limit, offset, callback){
 	limit = limit ? limit : settings.defaultRowLimit;
@@ -19,16 +16,25 @@ function getPages(limit, offset, callback){
 	});
 }
 
-function getPage(path, callback){
-	db.get("SELECT * FROM pages WHERE path=$path", {
+function setPagePublished(page, published, callback){
+	published = (published == true);
+	db.run("UPDATE pages SET published=? WHERE path=?", [published, page], function(err){
+		callback(err);
+	});
+}
+
+function getPage(path, includeUnpublished, callback){
+	var limit = "";
+	if(!includeUnpublished) limit = " AND published=1";
+	db.get("SELECT * FROM pages WHERE path=$path"+limit, {
 		"$path": path
 	}, function(err, row) {
-	  callback(err, row);
+	  if(callback) callback(err, row);
 	});
 }
 
 function addPage(path, title, body, callback){
-	db.run("INSERT INTO pages (path, title, body, time) VALUES (?, ?, ?, ?)", [path, title, body, getTimestamp()], function(err){
+	db.run("INSERT INTO pages (path, title, body, time) VALUES (?, ?, ?, ?)", [path, title, body, moment().unix()], function(err){
 		callback(err);
 	});
 }
@@ -52,7 +58,8 @@ CREATE TABLE pages \
 	path TEXT PRIMARY KEY,\
 	title TEXT NOT NULL,\
 	body TEXT NOT NULL,\
-	time INT NOT NULL\
+	time INT NOT NULL,\
+	published INT NOT NULL DEFAULT 0\
 );");
   db.run("\
 CREATE TABLE feedback\
@@ -67,7 +74,7 @@ CREATE TABLE feedback\
 
   var stmt = db.prepare("INSERT INTO pages (path, title, body, time) VALUES (?, ?, ?, ?)");
   _.each(['/','/asddf','/durka', '/dasdf/dasdf', '/shasfsdf/dsf'],function(i){
-    stmt.run(i,"tizitle::" + i + "-endtitle", "this iz a body omg", 1412);
+    stmt.run(i,"tizitle::" + i + "-endtitle", "this iz a body omg", moment().unix());
   });
   stmt.finalize();
   getPages(2, 0, function(err, r){ console.log(r); });
@@ -82,5 +89,6 @@ module.exports = {
 	getPage: getPage,
 	setFeedback: setFeedback,
 	addPage: addPage,
-	deletePage: deletePage
+	deletePage: deletePage,
+	setPagePublished: setPagePublished
 }
