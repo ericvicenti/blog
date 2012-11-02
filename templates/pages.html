@@ -4,14 +4,15 @@
 	<thead>
 		<th>Title</th>
 		<th>Publish Date</th>
+		<th>Last Modified</th>
 	</thead>
 	<tbody>
 <% _.each(pages, function(page){ %>
 <tr>
-	<td><% if(page.published){ %><a href="<%=page.path%>"><%=page.title%></a><% } else { %><%=page.title%><% } %></td>
+	<td><a href="<%=page.published ? '' : '/preview' %><%=page.path%>"><%=page.title%></a></td>
+	<td><%=page.published ? _.moment.unix(page.published).from() : "Not Published"%></td>
 	<td><%=_.moment.unix(page.time).from()%></td>
 	<td><a href="/edit<%=page.path%>" class="btn">Edit</a></td>
-	<td><%=JSON.stringify(page)%></td>
 </tr>
 <% }); %>
 	</tbody>
@@ -23,8 +24,8 @@
 
 <div class="pagination pagination-centered">
 	<ul>
-		<li class="<%=(page==0) ? 'disabled' : '' %>"><a href="?page=<%=(page-1)%>">Prev</a></li>
-		<li class="disabled"><a href="#">Page <%=(page+1)%></a></li>
-		<li class="<%=(pages.length==page_size) ? '' : 'disabled' %>"><a href="?page=<%=(page+1)%>">Next</a></li>
+		<li class="<%=(page==0) ? 'disabled' : '' %>"><a href="/pages/<%=(page-1)%>">Prev</a></li>
+		<li class="disabled"><a href="/pages/<%=page%>">Page <%=(page+1)%></a></li>
+		<li class="<%=(pages.length==page_size) ? '' : 'disabled' %>"><a href="/pages/<%=(page+1)%>">Next</a></li>
 	</ul>
 </div>

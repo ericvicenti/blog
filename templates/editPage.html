@@ -3,6 +3,10 @@
 	<textarea name="body">
 		<%=page.body%>
 	</textarea>
+
+	<% if(page.path){ %>
+	<input type="submit" name="submit" value="Delete Instantly" class="btn btn-danger">	
+	<% } %>
 	<input type="submit" name="submit" value="Save as Draft" class="btn">
 	<input type="submit" name="submit" value="Publish" class="btn btn-primary">
 </form>

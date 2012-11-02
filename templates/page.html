@@ -1,0 +1,12 @@
+<% if(!published){ %>
+<div class="alert alert-info">
+  <strong>DRAFT</strong> This page has not been published.
+</div>
+<% } %>
+
+<h1><%=title%></h1>
+<% if(published){ %>
+<p>Published <%=_.moment.unix(published).from()%></p>
+<% } %>
+<hr>
+<p><%=body%></p>
