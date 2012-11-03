@@ -3,16 +3,17 @@
 <table class="table">
 	<thead>
 		<th>Title</th>
+		<th>Path</th>
 		<th>Publish Date</th>
 		<th>Last Modified</th>
 	</thead>
 	<tbody>
 <% _.each(pages, function(page){ %>
 <tr>
-	<td><a href="<%=page.published ? '' : '/preview' %><%=page.path%>"><%=page.title%></a></td>
-	<td><%=page.published ? _.moment.unix(page.published).from() : "Not Published"%></td>
+	<td><a href="/edit<%=page.path%>"><%=page.title%></a></td>
+	<td><a href="<%=page.published ? '' : '/preview' %><%=page.path%>"><%=page.path%></a></td>
+	<td><%=page.published ? _.moment.unix(page.published).from() : '<span class="label label-info">Not Published</span>'%></td>
 	<td><%=_.moment.unix(page.time).from()%></td>
-	<td><a href="/edit<%=page.path%>" class="btn">Edit</a></td>
 </tr>
 <% }); %>
 	</tbody>

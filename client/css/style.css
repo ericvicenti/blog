@@ -1,34 +1,61 @@
-body 
-{ 
-	background-color: White;
-    font-family: sans-serif;
-}
-
-.wmd-panel
+body
 {
-	margin-left: 25%;
-	margin-right: 25%;
-	width: 50%;
-	min-width: 500px;
+	padding-top: 60px;
 }
-
+.btn
+{
+	margin: 0 15px;
+}
+.span6.editCol
+{
+	margin: 0 10px;
+	padding-left: 20px;
+	width: 440px;
+}
+.span6 .well
+{
+	width: 415px;
+}
+.well.center
+{
+	text-align: center;
+}
+a.brand
+{
+	padding: 10px 20px 10px 30px;
+}
 .wmd-button-bar 
 {
 	width: 100%;
 	background-color: Silver; 
 }
-
+.preview-label
+{
+	background-color: rgb(150,30,30);
+	width: 434px;
+	border-radius: 5px;
+	padding: 5px 8px;
+	color: white;
+	font-weight: bold;
+}
 .wmd-input 
 { 
 	height: 300px;
 	width: 100%;
-	background-color: Gainsboro;
-	border: 1px solid DarkGray;
+	border: 1px solid rgb(200,200,200);
+    border-radius: 5px;
+    background-color: rgb(253,253,253);
 }
 
-.wmd-preview 
-{ 
-	background-color: #c0e0ff; 
+input.title
+{
+	width: 460px;
+	padding: 0;
+	background-color: white;
+	color: #333;
+    font-size: 30px;
+    margin: 10px 0px;
+    border: none;
 }
 
 .wmd-button-row 
@@ -86,9 +113,6 @@ body
 {
     left: 300px;
 }
-
-
-
 
 .wmd-prompt-background
 {

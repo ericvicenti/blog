@@ -8,7 +8,7 @@ var _ = require('./util.js'),
 // Templating
 var templateDir = __dirname + '/templates/',
 	templateExt = '.html',
-	templates = ['index','page','pages','login','profile','editPage'],
+	templates = ['index','page','pages','login','profile','editPage','home'],
 	render = {};
 _.each(templates, function(name){
 	render[name] = _.template(String(fs.readFileSync(templateDir + name + templateExt)));
@@ -103,7 +103,7 @@ app.post('/edit*', function(req,res){
 	var path = req.url.split('/edit')[1];
 	var page = req.body;
 	page.published = page.submit=="Publish";
-	if(page.submit=="Delete Instantly"){
+	if(page.submit=="Delete Immediately"){
 		return db.deletePage(path, function(){
 			res.redirect('/pages');
 		});
@@ -139,7 +139,9 @@ var home = function(req, res, next){
 		console.log('see!!!')
 		res.send(render.index({
 			title: 'home',
-			content: JSON.stringify(pages)
+			content: render.home({
+				pages: pages
+			})
 		}));
 	});
 }
@@ -156,11 +158,6 @@ app.use(function(req,res,next){
 		} else next();
 	});
 });
-app.use(function(req,res,next){
-	db.checkPath(req.url, function(){
-		console.log(arguments);
-		res.send('asdf');
-	});
-});
+app.use(express.static(__dirname + '/client'));
 app.listen(settings.port);
 console.log("listening on port "+settings.port);

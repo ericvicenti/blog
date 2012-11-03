@@ -1,12 +1,19 @@
+<% if(newVersion && version<newVersion){ %>
+<div class="alert">
+  <strong>PAGE UPDATED</strong> This is an outdated version. See the newest version <a href="<%=published ? '' : '/preview'%><%=path%>.<%=newVersion%>">HERE</a>
+</div>	
+<% } %>
 <% if(!published){ %>
 <div class="alert alert-info">
-  <strong>DRAFT</strong> This page has not been published.
+  <strong>DRAFT</strong> This page is not published
 </div>
 <% } %>
 
 <h1><%=title%></h1>
 <% if(published){ %>
 <p>Published <%=_.moment.unix(published).from()%></p>
+<% } if(updated && updated!=published){ %> 
+<p>Last updated <%=_.moment.unix(updated).from()%></p>
 <% } %>
 <hr>
-<p><%=body%></p>
+<p><%=_.showdown(body)%></p>

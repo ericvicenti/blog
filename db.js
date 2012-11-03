@@ -2,7 +2,7 @@ var settings = require("./settings.js"),
 	_ = require("./util.js"),
 	moment = require("moment"),
 	sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database(':memory:');
+var db = new sqlite3.Database(__dirname+'/data');
 
 function getPageList(limit, offset, callback){
 	limit = limit ? limit : settings.defaultRowLimit;
@@ -20,7 +20,7 @@ function getPages(limit, offset, callback){
 	limit = limit ? limit : settings.defaultRowLimit;
 	limit = (settings.maxRowLimit<limit) ? settings.maxRowLimit : limit;
 	offset = offset ? Number(offset) : 0;
-	db.all("SELECT path, title, updated, published FROM pages ASC WHERE published IS NOT NULL ORDER BY published LIMIT $limit OFFSET $offset", {
+	db.all("SELECT path, title, updated, published, body FROM pages ASC WHERE published IS NOT NULL ORDER BY published LIMIT $limit OFFSET $offset", {
 		"$limit": limit,
 		"$offset": offset
 	}, function(err, rows) {
@@ -46,10 +46,41 @@ function isPathUsed(path, callback){
 function getPage(path, includeUnpublished, callback){
 	var limit = "";
 	if(!includeUnpublished) limit = " AND published>0";
-	db.get("SELECT * FROM pages WHERE path=$path"+limit, {
-		"$path": path
-	}, function(err, row) {
-	  if(callback) callback(err, row);
+	db.get("SELECT * FROM pages WHERE path=?"+limit, [path], function(err, row) {
+		if(row) row.newVersion = row.version;
+		if(err || row==null){
+			var v = _.parseVersion(path);
+			if(v){
+				db.get("SELECT * FROM pages WHERE path=?"+limit, [v.path], function(er, r) {
+					if(r) r.newVersion = r.version;
+					if(r && v.version == r.version) callback(er, r);
+					if(r && !er) getPageVersion(r, v.version, callback);
+					else callback(err, row)
+				});
+			} else {
+				callback(err, row);
+			}
+		} else if(callback) callback(err, row);
+	});
+}
+
+function getPageVersion(page, version, callback){
+	db.all("SELECT title, version, patch, time FROM history WHERE page=? AND version>=? ORDER BY version DESC",[page.path, version], function(err, rows){
+		if(err)	callback(err, page);
+		var v = false;
+		_.each(rows,function(row){
+			if(row.version==version){ v=row; };
+			page.body = _.compilePatch(page.body, row.patch);
+		});
+		if(!v) {
+			callback('VersionNotFound', null);
+			return;
+		}
+		page.title = v.title;
+		page.time = v.time;
+		page.newVersion = page.version;
+		page.version = version;
+		callback(err, page);
 	});
 }
 
@@ -66,9 +97,30 @@ function addPage(title, body, published, callback, iter){
 }
 
 function editPage(path, title, body, published, callback){
-	published = published ? moment().unix() : null;
-	db.run("UPDATE pages SET title=?, body=?, updated=?, published=? WHERE path=?", [title, body, moment().unix(), published, path], function(err){
-		callback(err);
+	getPage(path, true, function(err, page){
+		var version = page.version + 1,
+			oldVersion = page.version ? page.version : 0;
+		var patch = _.createPatch(body, page.body);
+		published = published ? (page.published ? page.published : moment().unix()) : null;
+		db.run("UPDATE pages SET title=?, body=?, updated=?, published=?, version=? WHERE path=?", [
+			title,
+			body,
+			moment().unix(),
+			published,
+			version,
+			path
+		],function(er){
+			db.run("INSERT INTO history (time, title, patch, searchable, page, version) VALUES (?, ?, ?, ?, ?, ?)", [
+				page.updated,
+				page.title,
+				patch.patch,
+				patch.searchable,
+				path,
+				oldVersion
+			], function(err){
+				callback(err);
+			});
+		});
 	});
 }
 
@@ -84,17 +136,17 @@ function setFeedback(page, host, vote, target, callback){
 	});
 }
 
-db.serialize(function() {
-  db.run("\
+db.run("\
 CREATE TABLE pages \
 (\
 	path TEXT PRIMARY KEY,\
 	title TEXT NOT NULL,\
 	body TEXT NOT NULL,\
 	updated INT NOT NULL,\
-	published INT DEFAULT NULL\
-);");
-  db.run("\
+	published INT,\
+	version INTEGER NOT NULL DEFAULT 0\
+);", function(err){ // we don't care about err, cause there is probably already a table
+db.run("\
 CREATE TABLE feedback\
 (\
  	id INTEGER PRIMARY KEY,\
@@ -103,19 +155,24 @@ CREATE TABLE feedback\
 	vote INTEGER,\
 	target TEXT,\
 	FOREIGN KEY(page) REFERENCES pages(path)\
-);");
-
-  var stmt = db.prepare("INSERT INTO pages (path, title, body, updated) VALUES (?, ?, ?, ?)");
-  _.each(['/','/asddf','/durka', '/dasdf/dasdf', '/shasfsdf/dsf'],function(i){
-    stmt.run(i,"tizitle::" + i + "-endtitle", "this iz a body omg", moment().unix());
+);", function(err){ // we don't care about err, cause there is probably already a table
+  db.run("\
+CREATE TABLE history\
+(\
+ 	id INTEGER PRIMARY KEY,\
+	time INT NOT NULL,\
+	title TEXT NOT NULL,\
+	searchable TEXT,\
+	patch TEXT,\
+	page TEXT NOT NULL,\
+	version INTEGER NOT NULL DEFAULT 0,\
+	FOREIGN KEY(page) REFERENCES pages(path)\
+);", function(err){ // we don't care about err, cause there is probably already a table
+  	console.log('started!');
   });
-  stmt.finalize();
-  getPage("/", function(err, r){ console.log(r); });
-  setFeedback('/', 'asdf.asdf.com', 1, 'asdf', function(err){
-	if(!err) console.log('feedback set!')
-	else console.log(err);
-  });
+ });
 });
+
 module.exports = {
 	isPathUsed: isPathUsed,
 	getPages: getPages,

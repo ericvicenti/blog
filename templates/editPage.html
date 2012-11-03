@@ -1,12 +1,53 @@
+<div class="row">
 <form action="" method="post">
-	<input name="title" value="<%=page.title%>"></input>
-	<textarea name="body">
-		<%=page.body%>
-	</textarea>
 
-	<% if(page.path){ %>
-	<input type="submit" name="submit" value="Delete Instantly" class="btn btn-danger">	
-	<% } %>
-	<input type="submit" name="submit" value="Save as Draft" class="btn">
-	<input type="submit" name="submit" value="Publish" class="btn btn-primary">
+    <div class="well">
+        <a href="<%=page.published ? '' : '/preview' %><%=page.path%>.versions" target="_blank" class="btn">Versions</a>
+        <input type="submit" name="submit" value="Publish" class="btn btn-primary pull-right">
+        <input type="submit" name="submit" value="Save as Draft" class="btn pull-right">
+    </div>
+
+    <div class="span6 editCol">
+        <input class="title" name="title" value="<%=page.title%>"></input>
+        <div id="wmd-button-bar"></div>
+<!-- indentation will mess this up -->
+<textarea class="wmd-input" id="wmd-input" name="body">
+<%=page.body%>
+</textarea>
+        <% if(page.path){ %>
+        <div class="well center">
+          <input type="submit" name="submit" value="Delete Immediately" class="btn center btn-danger"> 
+        </div>
+        <% } %>
+    </div>
+
+    <div class="span6 editCol">
+        <div class="preview-label">Preview</div>
+        <h1 class="title"><%=page.title%></h1>
+        <hr>
+        <div id="wmd-preview" class="wmd-panel wmd-preview">
+        </div>
+    </div>
+
+    <script type="text/javascript" src="/js/Markdown.Converter.js"></script>
+    <script type="text/javascript" src="/js/Markdown.Sanitizer.js"></script>
+    <script type="text/javascript" src="/js/Markdown.Editor.js"></script>
+    <script type="text/javascript">
+        (function () {
+            var converter1 = Markdown.getSanitizingConverter();
+            var editor1 = new Markdown.Editor(converter1);
+            editor1.run();
+            setTimeout(function(){
+                var change = function(){
+                    var val = $("input.title").first().val();
+                    $("h1.title").text(val);
+                };
+                change();
+                $("input.title").change(change);
+                $("input.title").keyup(change);
+            }, 1000);
+        })();
+    </script>
+
 </form>
+</div>

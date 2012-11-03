@@ -8,7 +8,9 @@
     "oauth": "~0.9.8",
     "querystring": "~0.1.0",
     "moment": "~1.7.2",
-    "diff": "~1.0.4"
+    "diff": "~1.0.4",
+    "showdown": "~0.3.1",
+    "postmark": "~0.1.6"
   },
   "engines": {
     "node": "0.8.x",

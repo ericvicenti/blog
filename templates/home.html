@@ -1,0 +1,10 @@
+<% _.each(pages, function(page){ %>
+	<h2><a href="<%=page.path%>"><%=page.title%></a></h2>
+<p><% if(page.published){ %>
+Published <%=_.moment.unix(page.published).from()%>. 
+<% } if(page.updated && page.updated!=page.published){ %> 
+Last updated <%=_.moment.unix(page.updated).from()%>.
+<% } %></p>
+	<%=_.showdown(page.body)%>
+	<hr>
+<% }); %>
