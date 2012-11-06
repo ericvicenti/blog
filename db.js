@@ -8,7 +8,7 @@ function getPageList(limit, offset, callback){
 	limit = limit ? limit : settings.defaultRowLimit;
 	limit = (settings.maxRowLimit<limit) ? settings.maxRowLimit : limit;
 	offset = offset ? Number(offset) : 0;
-	db.all("SELECT path, title, updated, published FROM pages LIMIT $limit OFFSET $offset", {
+	db.all("SELECT path, title, updated, published, draft FROM pages LIMIT $limit OFFSET $offset", {
 		"$limit": limit,
 		"$offset": offset
 	}, function(err, rows) {
@@ -20,19 +20,11 @@ function getPages(limit, offset, callback){
 	limit = limit ? limit : settings.defaultRowLimit;
 	limit = (settings.maxRowLimit<limit) ? settings.maxRowLimit : limit;
 	offset = offset ? Number(offset) : 0;
-	db.all("SELECT path, title, updated, published, body FROM pages ASC WHERE published IS NOT NULL ORDER BY published LIMIT $limit OFFSET $offset", {
+	db.all("SELECT path, title, updated, published, body FROM pages WHERE published IS NOT NULL ORDER BY published DESC LIMIT $limit OFFSET $offset", {
 		"$limit": limit,
 		"$offset": offset
 	}, function(err, rows) {
 	  callback(err, rows);
-	});
-}
-
-function setPagePublished(page, published, callback){
-	published = (published == true);
-	published = published ? moment().unix() : null;
-	db.run("UPDATE pages SET published=? WHERE path=?", [published, page], function(err){
-		callback(err);
 	});
 }
 
@@ -43,7 +35,7 @@ function isPathUsed(path, callback){
 	});
 }
 
-function getPage(path, includeUnpublished, callback){
+function getPage(path, includeUnpublished, includeDraft, callback){
 	var limit = "";
 	if(!includeUnpublished) limit = " AND published>0";
 	db.get("SELECT * FROM pages WHERE path=?"+limit, [path], function(err, row) {
@@ -54,18 +46,31 @@ function getPage(path, includeUnpublished, callback){
 				db.get("SELECT * FROM pages WHERE path=?"+limit, [v.path], function(er, r) {
 					if(r) r.newVersion = r.version;
 					if(r && v.version == r.version) callback(er, r);
-					if(r && !er) getPageVersion(r, v.version, callback);
+					if(r && !er) getPageVersion(r, v.version, includeUnpublished, includeDraft, callback);
 					else callback(err, row)
 				});
 			} else {
 				callback(err, row);
 			}
-		} else if(callback) callback(err, row);
+		} else if(callback){
+			if(includeDraft && row.draft){
+				db.get("SELECT * FROM history WHERE path=? AND version=?;", [
+						path,
+						row.version + 1
+					], function(err, v){
+						row.title = v.title;
+						row.body = _.compilePatch(row.body, v.patch);
+						row.time = v.time;
+						row.version = v.version;
+						callback(err, row);
+					});
+			} else callback(err, row);
+		}
 	});
 }
 
-function getPageVersion(page, version, callback){
-	db.all("SELECT title, version, patch, time FROM history WHERE page=? AND version>=? ORDER BY version DESC",[page.path, version], function(err, rows){
+function getPageVersion(page, version, includeUnpublished, includeDraft, callback){
+	db.all("SELECT title, version, patch, time, published FROM history WHERE page=? AND version>=? ORDER BY version DESC",[page.path, version], function(err, rows){
 		if(err)	callback(err, page);
 		var v = false;
 		_.each(rows,function(row){
@@ -76,6 +81,7 @@ function getPageVersion(page, version, callback){
 			callback('VersionNotFound', null);
 			return;
 		}
+		if(!includeUnpublished && (!v.published || !page.published)) return callback('Auth', null);
 		page.title = v.title;
 		page.time = v.time;
 		page.newVersion = page.version;
@@ -96,31 +102,56 @@ function addPage(title, body, published, callback, iter){
 	});
 }
 
-function editPage(path, title, body, published, callback){
+function postVersion(path, title, body, published, callback){
 	getPage(path, true, function(err, page){
 		var version = page.version + 1,
 			oldVersion = page.version ? page.version : 0;
 		var patch = _.createPatch(body, page.body);
 		published = published ? (page.published ? page.published : moment().unix()) : null;
-		db.run("UPDATE pages SET title=?, body=?, updated=?, published=?, version=? WHERE path=?", [
-			title,
-			body,
-			moment().unix(),
-			published,
-			version,
-			path
-		],function(er){
-			db.run("INSERT INTO history (time, title, patch, searchable, page, version) VALUES (?, ?, ?, ?, ?, ?)", [
+		function addToHistory(version){
+			db.run("INSERT OR REPLACE INTO history (time, title, patch, searchable, page, version, published) VALUES (?, ?, ?, ?, ?, ?, ?)", [
 				page.updated,
 				page.title,
 				patch.patch,
 				patch.searchable,
 				path,
-				oldVersion
+				version,
+				published ? moment().unix() : false
 			], function(err){
 				callback(err);
 			});
-		});
+		}
+		if(page.published){
+			if(published){
+				db.run("UPDATE pages SET title=?, body=?, updated=?, version=? WHERE path=?", [
+					title,
+					body,
+					moment().unix(),
+					version,
+					path
+				],function(er){
+					addToHistory(oldVersion);
+				});
+			} else {
+				db.run("UPDATE pages SET draft=?, WHERE path=?", [
+					1,
+					path
+				],function(er){
+					addToHistory(version);
+				});
+			}
+		} else {
+			db.run("UPDATE pages SET title=?, body=?, updated=?, published=?, version=? WHERE path=?", [
+				title,
+				body,
+				moment().unix(),
+				published,
+				version,
+				path
+			],function(er){
+				addToHistory(oldVersion);
+			});	
+		}
 	});
 }
 
@@ -144,6 +175,7 @@ CREATE TABLE pages \
 	body TEXT NOT NULL,\
 	updated INT NOT NULL,\
 	published INT,\
+	draft INT NOT NULL DEFAULT 0,\
 	version INTEGER NOT NULL DEFAULT 0\
 );", function(err){ // we don't care about err, cause there is probably already a table
 db.run("\
@@ -162,13 +194,21 @@ CREATE TABLE history\
  	id INTEGER PRIMARY KEY,\
 	time INT NOT NULL,\
 	title TEXT NOT NULL,\
+	published INT,\
 	searchable TEXT,\
 	patch TEXT,\
 	page TEXT NOT NULL,\
 	version INTEGER NOT NULL DEFAULT 0,\
 	FOREIGN KEY(page) REFERENCES pages(path)\
 );", function(err){ // we don't care about err, cause there is probably already a table
-  	console.log('started!');
+	  db.run("\
+	CREATE UNIQUE INDEX IF NOT EXISTS version ON history\
+(\
+	page,\
+	version,\
+);", function(err){ // we don't care about err, cause there is probably already a table
+	  	console.log('started!');
+	  });
   });
  });
 });
@@ -179,8 +219,7 @@ module.exports = {
 	getPageList: getPageList,
 	getPage: getPage,
 	setFeedback: setFeedback,
-	editPage: editPage,
+	postVersion: postVersion,
 	addPage: addPage,
-	deletePage: deletePage,
-	setPagePublished: setPagePublished
+	deletePage: deletePage
 }

@@ -58,6 +58,9 @@ _.mixin({
 			path: str.substr(0,str.length-(b.length+1))
 		}
 	},
+	trimStr: function(start, trimmer){
+		return start.substr(0,start.length-trimmer.length);
+	},
 	moment: moment,
 	slugify: function(text) {
 		text = text.replace(/[^-a-zA-Z0-9,&\s]+/ig, '');

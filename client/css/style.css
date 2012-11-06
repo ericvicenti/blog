@@ -27,46 +27,47 @@ a.brand
 .wmd-button-bar 
 {
 	width: 100%;
-	background-color: Silver; 
+	background-color: Silver;
 }
-.preview-label
+.edit-well
 {
-	background-color: rgb(150,30,30);
+	background-color: rgb(220,220,220);
 	width: 434px;
 	border-radius: 5px;
 	padding: 5px 8px;
 	color: white;
 	font-weight: bold;
+	border: 1px solid rgb(200,200,200);
+	margin: 0 0 20px;
 }
 .wmd-input 
 { 
 	height: 300px;
-	width: 100%;
+    width: 417px;
 	border: 1px solid rgb(200,200,200);
-    border-radius: 5px;
-    background-color: rgb(253,253,253);
+    background-color: rgb(255,250,244);
+    padding: 8px;
+    margin: 0;
 }
 
 input.title
 {
-	width: 460px;
-	padding: 0;
-	background-color: white;
+	border: 1px solid rgb(200,200,200);
 	color: #333;
     font-size: 30px;
-    margin: 10px 0px;
-    border: none;
+    padding: 5px 8px 2px;
+    width: 417px;
+    margin: 3px 0;
 }
 
 .wmd-button-row 
 {
 	position: relative; 
-	margin-left: 5px;
-	margin-right: 5px;
-	margin-bottom: 5px;
-	margin-top: 10px;
-	padding: 0px;  
 	height: 20px;
+    background: white;
+    padding: 2px;
+    margin: 5px 0;
+	border: 1px solid rgb(200,200,200);
 }
 
 .wmd-spacer
@@ -74,7 +75,6 @@ input.title
 	width: 1px; 
 	height: 20px; 
 	margin-left: 14px;
-	
 	position: absolute;
 	background-color: Silver;
 	display: inline-block; 
@@ -141,4 +141,12 @@ input.title
 	font-family: trebuchet MS, helvetica, sans-serif;
 	font-size: 0.8em;
 	font-weight: bold;
+}
+.delete-well
+{
+	background-color: rgb(50,10,10);
+    width: 417px;
+    padding: 8px;
+    text-align: center;
+    margin: 5px 0;
 }

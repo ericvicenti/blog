@@ -1,13 +1,8 @@
 <div class="row">
 <form action="" method="post">
 
-    <div class="well">
-        <a href="<%=page.published ? '' : '/preview' %><%=page.path%>.versions" target="_blank" class="btn">Versions</a>
-        <input type="submit" name="submit" value="Publish" class="btn btn-primary pull-right">
-        <input type="submit" name="submit" value="Save as Draft" class="btn pull-right">
-    </div>
-
     <div class="span6 editCol">
+      <div class="edit-well">
         <input class="title" name="title" value="<%=page.title%>"></input>
         <div id="wmd-button-bar"></div>
 <!-- indentation will mess this up -->
@@ -15,16 +10,20 @@
 <%=page.body%>
 </textarea>
         <% if(page.path){ %>
-        <div class="well center">
+        <div class="delete-well center">
           <input type="submit" name="submit" value="Delete Immediately" class="btn center btn-danger"> 
         </div>
         <% } %>
+      </div>
     </div>
 
     <div class="span6 editCol">
-        <div class="preview-label">Preview</div>
         <h1 class="title"><%=page.title%></h1>
-        <hr>
+        <div class="well">
+            <a href="<%=page.published ? '' : '/preview' %><%=page.path%>.versions" target="_blank" class="btn">Versions</a>
+            <input type="submit" name="submit" value="Publish" class="btn btn-primary pull-right">
+            <input type="submit" name="submit" value="Save as Draft" class="btn pull-right">
+        </div>
         <div id="wmd-preview" class="wmd-panel wmd-preview">
         </div>
     </div>

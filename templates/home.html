@@ -1,10 +1,20 @@
 <% _.each(pages, function(page){ %>
-	<h2><a href="<%=page.path%>"><%=page.title%></a></h2>
-<p><% if(page.published){ %>
-Published <%=_.moment.unix(page.published).from()%>. 
-<% } if(page.updated && page.updated!=page.published){ %> 
-Last updated <%=_.moment.unix(page.updated).from()%>.
-<% } %></p>
+	<h2>
+		<a href="<%=page.path%>"><%=page.title%></a>
+		<small><% if(page.published){ %>
+			Published <%=_.moment.unix(page.published).from()%>. 
+		<% } if(page.updated && page.updated!=page.published){ %> 
+			Last updated <%=_.moment.unix(page.updated).from()%>.
+		<% } %></small>
+	</h2>
 	<%=_.showdown(page.body)%>
 	<hr>
 <% }); %>
+
+<div class="pagination pagination-centered">
+  <ul>
+    <li class="<%=(page==0) ? 'disabled' : '' %>"><a href="<%=(page==0) ? '/' : '/'+(page-1) %>">«</a></li>
+    <li class="active"><a href="/<%=page%>">Page <%=page+1%></a></li>
+    <li class="<%=isAnother ? '' : 'disabled' %>"><a href="<%=isAnother ? '/'+(page+1) :'/'+page %>">»</a></li>
+ </ul>
+</div>
