@@ -1,5 +1,6 @@
 *.DS_Store
 node_modules/*
+keys/*
 npm_debug.log
 data
 settings.js

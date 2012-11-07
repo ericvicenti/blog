@@ -1,6 +1,9 @@
 var _ = require('./util.js'),
 	fs = require('fs'),
-	express= require('express'),
+	express = require('express'),
+	http = require('http'),
+	https = require('https'),
+	crypto = require('crypto'),
 	auth = require('./auth.js'),
 	settings = require("./settings.js"),
 	db = require('./db.js');
@@ -22,6 +25,48 @@ app.use(express.cookieParser());
 app.use(express.session({
 	secret: "asdfljkal jksrg23asjdflk"
 }));
+
+var sslKey = fs.readFileSync(settings.keyPath).toString();
+var sslCert = fs.readFileSync(settings.certPath).toString();
+var opts = {
+	key: sslKey,
+	cert: sslCert,
+	port: 443,
+		host: 'encrypted.google.com',
+		path: '/',
+		method: 'GET'
+	};
+opts.agent = new https.Agent(opts);
+
+function request(q, cb){
+	console.log('requesting!! '+q);
+	var req = https.request(opts, function(res){
+		console.log('heyo!1');
+		cb();
+	}, function(){
+		console.log('error!!!??!!?!?!?');
+		console.log(arguments);
+		cb();
+	});
+	req.on('response', function (response) {
+  req.on('data', function (chunk) {
+    console.log('BODY: ' + chunk);
+  });
+});
+	req.on('error', function(){
+		console.log('error22!!!??!!?!?!?');
+		console.log(arguments);
+		cb();
+	});
+	console.log('req sent');
+}
+
+app.use(function(req,res,next){
+	console.log(req.connection.servername);
+	console.log(req.connection.authorizationError);
+	console.log('authorized bool:' + req.connection.authorized);
+	request('asdf', next);
+});
 
 app.get('/login', function(req, res){
 	res.send(render.index({
@@ -174,5 +219,16 @@ app.use(function(req,res){
 	}))
 });
 
-app.listen(settings.port);
-console.log("listening on port "+settings.port);
+var httpsServer = false;
+if(settings.securePort){
+	var opts = {
+		key: sslKey,
+		cert: sslCert,
+		requestCert: true
+	};
+
+	httpsServer = https.createServer(opts, app);
+	httpsServer.listen(settings.securePort);
+}
+var httpServer = http.createServer(app).listen(settings.port);
+console.log("listening on port "+settings.port+( settings.securePort ? ' and '+settings.securePort:''));
