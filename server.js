@@ -177,7 +177,7 @@ app.use(function(req,res){
 	}))
 });
 
-var pfx = fs.readFileSync(settings.pfxPath).toString();
+var pfx = fs.readFileSync(settings.pfxPath);
 
 var httpsServer = false;
 if(settings.securePort){
