@@ -2,8 +2,8 @@
 
 module.exports = {
 	host: 'localhost',
-	port: 80,
-	securePort: 443,
+	port: 8088,
+	securePort: 4438,
 	googleID: 'YOUR GOOGLE ID',
 	postmarkAPIKey: 'YOUR POSTMARK API KEY',
 	pfxPath: 'keys/localhost.pfx',
