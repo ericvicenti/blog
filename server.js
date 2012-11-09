@@ -26,6 +26,49 @@ app.use(express.session({
 	secret: "asdfljkal jksrg23asjdflk"
 }));
 
+// HTTPS Client
+
+var agent = new https.Agent({
+	requestCert: true,
+	pfx: settings.pfx
+});
+function sendRequest(opts,cb){
+	var opts = _.extend({
+		agent: agent,
+		port: 443
+	}, opts);
+	var req = new https.request(opts, function(res){
+		res.on('end', function(){
+			console.log(res.connection);
+			cb(res);
+		});
+	});
+	req.end();
+	return req;
+}
+
+var get = function(host, path, callback){
+	sendRequest({
+		host: host,
+		path: path,
+		method: 'GET'
+	}, callback);
+}
+
+var post = function(host, path, opts, callback){
+	var data = {
+		subject: opts.subject,
+		opinion: opts.opinion,
+		response: opts.response,
+		modification: opts.modification
+	}
+	sendRequest({
+		host: host,
+		path: path,
+		method: 'GET'
+	}, callback);
+}
+
 app.get('/login', function(req, res){
 	res.send(render.index({
 		title: 'Login',
@@ -67,10 +110,10 @@ function pagesListPage(req, res, next){
 		}));
 	});
 }
-app.get('/pages', pagesListPage);
-app.get('/pages/:page', pagesListPage);
+app.get('/pages', auth.requireAuth, pagesListPage);
+app.get('/pages/:page', auth.requireAuth, pagesListPage);
 
-app.get('/pages/new', function(req,res){
+app.get('/pages/new', auth.requireAuth, function(req,res){
 	res.send(render.index({
 		title: 'edit page',
 		content: render.editPage({
@@ -81,14 +124,14 @@ app.get('/pages/new', function(req,res){
 		})
 	}));
 });
-app.post('/pages/new', function(req,res){
+app.post('/pages/new', auth.requireAuth, function(req,res){
 	var page = req.body;
 	page.published = page.submit=="Publish";
 	db.addPage(page.title, page.body, page.published, function(err, path){
 		res.redirect((page.published ? '' : '/preview')+path);
 	});
 });
-app.get('/edit*', function(req,res){
+app.get('/edit*', auth.requireAuth, function(req,res){
 	var path = req.url.split('/edit')[1];
 	db.getPage(path, true, false, function(err, page){
 		if(err){
@@ -102,7 +145,7 @@ app.get('/edit*', function(req,res){
 		}));
 	});
 });
-app.post('/edit*', function(req,res){
+app.post('/edit*', auth.requireAuth, function(req,res){
 	var path = req.url.split('/edit')[1];
 	var page = req.body;
 	page.published = page.submit=="Publish";
@@ -116,7 +159,7 @@ app.post('/edit*', function(req,res){
 	});
 });
 
-app.get('/preview*', function(req,res,next){
+app.get('/preview*', auth.requireAuth, function(req,res,next){
 	var path = req.url.split('/preview')[1];
 	db.getPage(path, true, function(err, page){
 		if(page){ // Page
@@ -159,15 +202,17 @@ app.use(function(req,res,next){
 				title: page.title,
 				content: render.page(page)
 			}));
-		} else if(_.endsWith(req.url,'.versions')){
-			next();
-			// db.getPageVersions(_.trimStr(req.url,'.versions'), function(err, page){
-			// 	res.send('dur');
-
-			// })
 		} else next();
 	});
 });
+
+
+app.get('/test', function(req,res){
+	sendRequest('asdf',function(body){
+		res.send(body);
+	});
+});
+
 app.use(express.static(__dirname + '/client'));
 
 app.use(function(req,res){
@@ -177,12 +222,11 @@ app.use(function(req,res){
 	}))
 });
 
-var pfx = fs.readFileSync(settings.pfxPath);
 
 var httpsServer = false;
 if(settings.securePort){
 	var opts = {
-		pfx: pfx,
+		pfx: settings.pfx,
 		password: '',
 		requestCert: true
 	};
