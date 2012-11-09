@@ -27,7 +27,7 @@ app.use(express.session({
 }));
 
 // HTTPS Client
-
+settings.pfx = fs.readFileSync(settings.pfxPath);
 var agent = new https.Agent({
 	requestCert: true,
 	pfx: settings.pfx
@@ -38,8 +38,11 @@ function sendRequest(opts,cb){
 		port: 443
 	}, opts);
 	var req = new https.request(opts, function(res){
+		res.body = '';
+		res.on('data', function(a){
+			res.body += a;
+		});
 		res.on('end', function(){
-			console.log(res.connection);
 			cb(res);
 		});
 	});
@@ -171,11 +174,9 @@ app.get('/preview*', auth.requireAuth, function(req,res,next){
 	});
 });
 var home = function(req, res, next){
-	console.log(req.params.page);
 	var page_size = 2,
 		page = Number(req.params.page);
 	page = page ? page : 0;
-	console.log(page);
 	if(req.params.page && (''+page !== req.params.page)){
 		return next();
 	}
@@ -207,9 +208,19 @@ app.use(function(req,res,next){
 });
 
 
-app.get('/test', function(req,res){
-	sendRequest('asdf',function(body){
-		res.send(body);
+app.use(function(req,res,next){
+	var parts = req.url.split('/');
+	if(parts.length<3) return next();
+	parts.shift();
+	sendRequest({
+		host: parts.shift(),
+		method: 'GET',
+		path: '/'+parts.join('/')
+	},function(req){
+		if(req.connection.authorized){
+			console.log(req);
+			res.send();
+		} else next();
 	});
 });
 
