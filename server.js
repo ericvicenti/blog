@@ -209,7 +209,8 @@ app.use(function(req,res,next){
 
 
 app.use(function(req,res,next){
-	var parts = req.url.split('/');
+	return next();
+var parts = req.url.split('/');
 	if(parts.length<3) return next();
 	parts.shift();
 	sendRequest({
@@ -232,14 +233,22 @@ app.use(function(req,res){
 		content: '<h2>We couldn&apos;t find what you are looking for</h2><p>Sorry, it&apos;s probably our fault</p><p>You may want to <a href="/login">sign in</a>.</p>'
 	}))
 });
-
-
+var hostKeys = {};
+_.each(settings.hosts, function(host){
+	hostKeys[host] = fs.readFileSync(settings.keyDir+'/'+host+'.pfx');
+});
 var httpsServer = false;
 if(settings.securePort){
 	var opts = {
-		pfx: settings.pfx,
+		pfx: hostKeys['projectopencontent.org'],
 		password: '',
-		requestCert: true
+		requestCert: true,
+		SNICallback: function(host){
+			return crypto.createCredentials({
+				pfx: hostKeys[host],
+				password:''
+			}).context;
+		}
 	};
 
 	httpsServer = https.createServer(opts, app);
