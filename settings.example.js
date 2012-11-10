@@ -18,7 +18,7 @@ module.exports = {
 	hosts: ['myblogname.net'],
 
 	// the directory where each hosts .pfx file can be found
-	keyPath: 'keys',
+	keyDir: 'keys',
 
 	defaultRowLimit: 2,
 	
