@@ -16,6 +16,10 @@ var templateDir = __dirname + '/templates/',
 _.each(templates, function(name){
 	render[name] = _.template(String(fs.readFileSync(templateDir + name + templateExt)));
 });
+var renderIndex = render.index;
+render.index = function(a){ return renderIndex(_.extend({
+	name: settings.name
+}, a)); };
 
 // Main app
 var app = express();

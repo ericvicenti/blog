@@ -1,24 +1,32 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 	<title><%=title%></title>
-	<link rel="stylesheet" type="text/css" href="/css/readable.css" />
-	<link rel="stylesheet" type="text/css" href="/css/style.css" />
+	<link rel="stylesheet" type="text/css" href="/bs/less/blog.css" />
+	<link href='http://fonts.googleapis.com/css?family=Scada:400italic,700italic,400,700' rel='stylesheet' type='text/css'>
 </head>
 <body>
 	<div class="navbar navbar-fixed-top">
 	  <div class="navbar-inner">
 	  	<div class="container">
-		    <a class="brand" href="/">Blog</a>
+		    <a class="brand" href="/"><%=name%></a>
+		    <!--
 		    <ul class="nav">
 		      <li class=""><a href="/">Home</a></li>
-		      <li class=""><a href="/pages">Pages</a></li>
+		      <li class=""><a href="/login">Log In</a></li>
 		    </ul>
+			-->
+			<div class="pull-right">
+				<p class="tagline">Set the users free!</p>
+			</div>
 		</div>
 	  </div>
 	</div>
 	<div class="container">
 		<%=content%>
+	</div>
+	<div class="footer">
+		<p class="copyright">&copy; 2012 Eric Vicenti. - <a href="/login">Log In</a></p>
 	</div>
 	<script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.2.min.js"></script>
 	<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js"></script>

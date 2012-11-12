@@ -3,9 +3,11 @@
 module.exports = {
 	
 	host: 'myblogname.net',
+
+	name: 'Project Open Content',
 	
 	displayPort: 8088,
-	
+
 	listenPort: 8088,
 
 	securePort: 4438,
