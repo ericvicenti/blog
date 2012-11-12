@@ -4,7 +4,10 @@ module.exports = {
 	
 	host: 'myblogname.net',
 	
-	port: 8088,
+	displayPort: 8088,
+	
+	listenPort: 8088,
+
 	securePort: 4438,
 	
 	googleID: 'YOUR GOOGLE ID',
@@ -13,6 +16,8 @@ module.exports = {
 
 	// the default key for the HTTPS server
 	pfxPath: 'keys/projectopencontent.org.pfx',
+
+	pfxPass: '',
 
 	// all of the supported hosts
 	hosts: ['myblogname.net'],

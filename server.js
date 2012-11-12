@@ -30,7 +30,8 @@ app.use(express.session({
 settings.pfx = fs.readFileSync(settings.pfxPath);
 var agent = new https.Agent({
 	requestCert: true,
-	pfx: settings.pfx
+	pfx: settings.pfx,
+	password: settings.pfxPass
 });
 function sendRequest(opts,cb){
 	var opts = _.extend({
@@ -254,5 +255,5 @@ if(settings.securePort){
 	httpsServer = https.createServer(opts, app);
 	httpsServer.listen(settings.securePort);
 }
-var httpServer = http.createServer(app).listen(settings.port);
-console.log("listening on port "+settings.port+( settings.securePort ? ' and '+settings.securePort:''));
+var httpServer = http.createServer(app).listen(settings.listenPort);
+console.log("listening on port "+settings.listenPort+( settings.securePort ? ' and '+settings.securePort:''));

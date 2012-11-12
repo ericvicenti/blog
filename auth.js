@@ -9,7 +9,7 @@ var googleLogin = function(req, res){
 						"anonymous",
 						"anonymous",
 						"1.0",
-						"http://"+settings.host+":"+settings.port+"/login/google/cb"+( req.param('action') && req.param('action') != "" ? "?action="+querystring.escape(req.param('action')) : "" ),
+						"http"+(settings.displaySecure ? 's':'')+"://"+settings.host+(settings.displayPort ? ":"+settings.displayPort : '' )+"/login/google/cb"+( req.param('action') && req.param('action') != "" ? "?action="+querystring.escape(req.param('action')) : "" ),
 						"HMAC-SHA1");
 	oa.getOAuthRequestToken(function(error, oauth_token, oauth_token_secret, results){
 		if(error) {
