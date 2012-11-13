@@ -111,7 +111,7 @@ app.get('/login/google', function(req, res) {
 app.get('/login/google/cb', function(req, res) {
 	auth.googleLoginCallback(req, res);
 });
-app.get('/profile', auth.requireAuth, function(req, res) {
+app.get('/profile', auth.verifyAuth, function(req, res) {
 	res.send(render.index({
 		title: 'Your Profile',
 		content: render.profile({
