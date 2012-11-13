@@ -32,6 +32,15 @@ app.use(express.session({
 	secret: "asdfljkal jksrg23asjdflk"
 }));
 
+// Stop here if they are requesting the wrong host
+app.use(function(req, res, next){
+	if((settings.host+(settings.displayPort ? ':'+settings.displayPort : '')) == req.headers.host){
+		next();
+	} else {
+		res.send('');
+	}
+});
+
 // HTTPS Client
 var pfxPath = settings.pfx
 settings.pfx = fs.readFileSync(pfxPath);
