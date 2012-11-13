@@ -267,6 +267,7 @@ if(settings.securePort){
 		requestCert: true,
 		SNICallback: function(host){
 			var host = hostKeys[host];
+			if(!host) return;
 			return crypto.createCredentials({
 				pfx: host.pfx,
 				password: host.password
