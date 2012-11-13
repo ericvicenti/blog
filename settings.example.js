@@ -1,4 +1,5 @@
 // Config
+var keyDir = 'keys';
 
 module.exports = {
 	
@@ -7,6 +8,7 @@ module.exports = {
 	name: 'Project Open Content',
 	
 	displayPort: 8088,
+	displaySecure: true,
 
 	listenPort: 8088,
 
@@ -16,20 +18,26 @@ module.exports = {
 	
 	postmarkAPIKey: 'YOUR POSTMARK API KEY',
 
-	// the default key for the HTTPS server
-	pfxPath: 'keys/projectopencontent.org.pfx',
+	pfx: keyDir+'/projectopencontent.org.pfx',
+	pfxPassword: '',
 
-	pfxPass: '',
-
-	// all of the supported hosts
-	hosts: ['myblogname.net'],
+	// all of the supported hosts.
+	hosts:[
+		// if a port is set, proxy to the port.
+		{
+		 name: 'markshow.io',
+		 port:8888,
+		 pfx: keyDir+'/markshow.pfx',
+		 password: '' 
+		},
+		// .. otherwise proxy to the http server
+		{ name: 'test.net', pfx: keyDir+'/test.net.pfx', password: '' },
+	],
 
 	// the directory where each hosts .pfx file can be found
-	keyDir: 'keys',
+	keyDir: keyDir,
 
 	defaultRowLimit: 2,
 	
 	maxRowLimit: 100,
-	
-	reservedPathFirstTerms: ['login','pages','edit','preview']
 }

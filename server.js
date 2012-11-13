@@ -8,6 +8,8 @@ var _ = require('./util.js'),
 	settings = require("./settings.js"),
 	db = require('./db.js');
 
+var reservedPathFirstTerms = ['login','pages','edit','preview']; //TODO: check this.
+
 // Templating
 var templateDir = __dirname + '/templates/',
 	templateExt = '.html',
@@ -31,11 +33,12 @@ app.use(express.session({
 }));
 
 // HTTPS Client
-settings.pfx = fs.readFileSync(settings.pfxPath);
+var pfxPath = settings.pfx
+settings.pfx = fs.readFileSync(pfxPath);
 var agent = new https.Agent({
 	requestCert: true,
 	pfx: settings.pfx,
-	password: settings.pfxPass
+	password: settings.pfxPassword
 });
 function sendRequest(opts,cb){
 	var opts = _.extend({
@@ -240,18 +243,19 @@ app.use(function(req,res){
 });
 var hostKeys = {};
 _.each(settings.hosts, function(host){
-	hostKeys[host] = fs.readFileSync(settings.keyDir+'/'+host+'.pfx');
+	hostKeys[host.name] = { pfx: fs.readFileSync(host.pfx), password: host.password };
 });
 var httpsServer = false;
 if(settings.securePort){
 	var opts = {
-		pfx: hostKeys['projectopencontent.org'],
-		password: '',
+		pfx: settings.pfx,
+		password: settings.pfxPassword,
 		requestCert: true,
 		SNICallback: function(host){
+			var host = hostKeys[host];
 			return crypto.createCredentials({
-				pfx: hostKeys[host],
-				password:''
+				pfx: host.pfx,
+				password: host.password
 			}).context;
 		}
 	};
