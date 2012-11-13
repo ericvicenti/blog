@@ -36,7 +36,7 @@ app.use(express.session({
 app.use(function(req, res, next){
 	if((settings.host+(settings.displayPort ? ':'+settings.displayPort : '')) == req.headers.host){
 		next();
-	} else if(('www.'settings.host+(settings.displayPort ? ':'+settings.displayPort : '')) == req.headers.host){
+	} else if(('www.'+settings.host+(settings.displayPort ? ':'+settings.displayPort : '')) == req.headers.host){
 		next();
 	} else {
 		res.send('');
