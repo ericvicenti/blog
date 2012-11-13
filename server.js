@@ -85,8 +85,14 @@ app.get('/login', function(req, res){
 		title: 'Login',
 		content: render.login({
 			action: req.param('action')
-		})
+		}),
+		locals: res.locals || {}
 	}));
+});
+app.get('/logout', function(req, res){
+	auth.logout(req, res, function(){
+		res.redirect('/');
+	});
 });
 app.get('/login/google', function(req, res) {	
 	auth.googleLogin(req, res);
@@ -94,15 +100,14 @@ app.get('/login/google', function(req, res) {
 app.get('/login/google/cb', function(req, res) {
 	auth.googleLoginCallback(req, res);
 });
-app.get('/profile', auth.requireGoogleAuth, function(req, res) {
-	auth.getGoogleProfile(req, res, function(user){
-		res.send(render.index({
-			title: 'Your Profile',
-			content: render.profile({
-				user: user
-			})
-		}));
-	});
+app.get('/profile', auth.requireAuth, function(req, res) {
+	res.send(render.index({
+		title: 'Your Profile',
+		content: render.profile({
+			user: res.locals.user
+		}),
+		locals: res.locals || {}
+	}));
 });
 
 function pagesListPage(req, res, next){
@@ -117,7 +122,8 @@ function pagesListPage(req, res, next){
 				page: page,
 				page_size: page_size,
 				pages: pages
-			})
+			}),
+			locals: res.locals || {}
 		}));
 	});
 }
@@ -132,10 +138,11 @@ app.get('/pages/new', auth.requireAuth, function(req,res){
 				title: 'New Page',
 				body: ''
 			}
-		})
+		}),
+		locals: res.locals || {}
 	}));
 });
-app.post('/pages/new', auth.requireAuth, function(req,res){
+app.post('/pages/new', auth.requireVerifiedAuth, function(req,res){
 	var page = req.body;
 	page.published = page.submit=="Publish";
 	db.addPage(page.title, page.body, page.published, function(err, path){
@@ -152,11 +159,12 @@ app.get('/edit*', auth.requireAuth, function(req,res){
 			title: 'edit page',
 			content: render.editPage({
 				page: page
-			})
+			}),
+			locals: res.locals || {}
 		}));
 	});
 });
-app.post('/edit*', auth.requireAuth, function(req,res){
+app.post('/edit*', auth.requireVerifiedAuth, function(req,res){
 	var path = req.url.split('/edit')[1];
 	var page = req.body;
 	page.published = page.submit=="Publish";
@@ -176,7 +184,8 @@ app.get('/preview*', auth.requireAuth, function(req,res,next){
 		if(page){ // Page
 			res.send(render.index({
 				title: page.title,
-				content: render.page(page)
+				content: render.page(page),
+				locals: res.locals || {}
 			}));
 		} else next();
 	});
@@ -197,20 +206,24 @@ var home = function(req, res, next){
 				pages: pages,
 				page: page,
 				isAnother: isAnother
-			})
+			}),
+			locals: res.locals || {}
 		}));
 	});
 }
-app.get('/:page', home);
-app.get('/', home);
+app.get('/:page', auth.startAuth, home);
+app.get('/', auth.startAuth, home);
 
 app.use(function(req,res,next){
 	db.getPage(req.url, false, false, function(err, page){
 		if(page){ // Page
-			res.send(render.index({
-				title: page.title,
-				content: render.page(page)
-			}));
+			auth.startAuth(req, res, function(){
+				res.send(render.index({
+					title: page.title,
+					content: render.page(page),
+					locals: res.locals || {}
+				}));
+			})
 		} else next();
 	});
 });
@@ -238,7 +251,8 @@ app.use(express.static(__dirname + '/client'));
 app.use(function(req,res){
 	res.send(404, render.index({
 		title: 'Not found!',
-		content: '<h2>We couldn&apos;t find what you are looking for</h2><p>Sorry, it&apos;s probably our fault</p><p>You may want to <a href="/login">sign in</a>.</p>'
+		content: '<h2>We couldn&apos;t find what you are looking for</h2><p>Sorry, it&apos;s probably our fault</p><p>You may want to <a href="/login">sign in</a>.</p>',
+		locals: res.locals || {}
 	}))
 });
 var hostKeys = {};
