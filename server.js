@@ -36,6 +36,8 @@ app.use(express.session({
 app.use(function(req, res, next){
 	if((settings.host+(settings.displayPort ? ':'+settings.displayPort : '')) == req.headers.host){
 		next();
+	} else if(('www.'+settings.host+(settings.displayPort ? ':'+settings.displayPort : '')) == req.headers.host){
+		next();
 	} else {
 		res.send('');
 	}
@@ -109,7 +111,7 @@ app.get('/login/google', function(req, res) {
 app.get('/login/google/cb', function(req, res) {
 	auth.googleLoginCallback(req, res);
 });
-app.get('/profile', auth.requireAuth, function(req, res) {
+app.get('/profile', auth.verifyAuth, function(req, res) {
 	res.send(render.index({
 		title: 'Your Profile',
 		content: render.profile({
@@ -161,7 +163,7 @@ app.post('/pages/new', auth.requireVerifiedAuth, function(req,res){
 app.get('/edit*', auth.requireAuth, function(req,res){
 	var path = req.url.split('/edit')[1];
 	db.getPage(path, true, false, function(err, page){
-		if(err){
+		if(err || !page){
 			return res.redirect('/pages');
 		}
 		res.send(render.index({
@@ -189,7 +191,7 @@ app.post('/edit*', auth.requireVerifiedAuth, function(req,res){
 
 app.get('/preview*', auth.requireAuth, function(req,res,next){
 	var path = req.url.split('/preview')[1];
-	db.getPage(path, true, function(err, page){
+	db.getPage(path, true, false, function(err, page){
 		if(page){ // Page
 			res.send(render.index({
 				title: page.title,
@@ -210,7 +212,7 @@ var home = function(req, res, next){
 		var isAnother = pages.length == (page_size+1);
 		if(isAnother) pages.pop();
 		res.send(render.index({
-			title: 'home',
+			title: settings.name,
 			content: render.home({
 				pages: pages,
 				page: page,
