@@ -21,6 +21,8 @@ module.exports = {
 	pfx: keyDir+'/projectopencontent.org.pfx',
 	pfxPassword: '',
 
+	gaKey: 'UA-34672340-1', // Your Google Analytics key
+
 	// all of the supported hosts.
 	hosts:[
 		// if a port is set, proxy to the port.
