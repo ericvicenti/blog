@@ -40,4 +40,9 @@ module.exports = {
 	defaultRowLimit: 2,
 	
 	maxRowLimit: 100,
+
+	meta: {
+		author: 'Your name here',
+		description: 'A description of my blog for the meta tag'
+	}
 }

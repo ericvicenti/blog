@@ -207,3 +207,77 @@ blockquote p
 {
   font-size: inherit;
 }
+.container {
+  position: relative;
+}
+.sidebar {
+    position: absolute;
+    width: 250px;
+    left: -260px;
+    top: 22px;
+  a {
+    color: #E69676;
+
+  }
+    a:hover {
+      color: #B1968C;
+    }
+  .pane {
+      font-size: 17px;
+      width: 250px;
+      background-color: #422B26;
+      border-radius: 5px;
+      color: #f0f0f0;
+      overflow: hidden;
+      margin: 0 10px 20px;
+      float: left;
+      .info {
+        padding: 10px;
+      }
+      .social {
+        text-align: center;
+        font-size: 36px;
+        margin: 20px 0;
+      }
+      .title {
+        color: #422B26;
+        font-weight: bold;
+        background-color: rgba(255,255,255,.7);
+        padding: 10px;
+        font-size: 24px;
+        width: 100%;
+      }
+  }
+  .person {
+    .image {
+      background-image: url('/img/eric.vicenti.jpg');
+      height: 315px;
+      width: 250px;
+      background-size: 250px 315px;
+    }
+  } 
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 2), 
+only screen and (min-device-pixel-ratio: 2) {
+
+.sidebar .person .image {
+  background-image: url('/img/eric.vicenti.x2.jpg');
+}
+
+}
+
+@media all and (max-width: 1180px){
+  .sidebar {
+    position: static;
+    left: 0;
+    top: 0;
+    width: 540px;
+    margin: 0 auto;
+  }
+}
+@media all and (max-width: 580px){
+  .sidebar {
+    width: 270px;
+  }
+}

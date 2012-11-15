@@ -4,6 +4,11 @@
 	<title><%=title%></title>
 	<link rel="stylesheet" type="text/css" href="/bs/less/blog.css" />
 	<link href='//fonts.googleapis.com/css?family=Scada:400italic,700italic,400,700' rel='stylesheet' type='text/css'>
+    <link href="/font/ss-social.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="<%=locals.meta.author%>">
+    <meta name="description" content="<%=locals.meta.description%>">
 </head>
 <body>
 	<div class="navbar navbar-fixed-top">
@@ -24,6 +29,28 @@
 	</div>
 	<div class="container">
 		<%=content%>
+		<div class="sidebar">
+			<div class="person pane">
+				<div class="image">
+					<div class="title">About Eric Vicenti</div>
+				</div>
+				<div class="info">Eric is an Entrepreneur and Web Engineer, working for <a href="http://trap.it/" target="_blank">TrapIt</a> in Palo Alto. Passionate about UI, intelligence networking, and robots.</div>
+				<div class="social">
+					<a class="ss-icon ss-social-circle" href="http://github.com/ericvicenti">githuboctocat</a>
+					<a class="ss-icon ss-social-circle" href="http://twitter.com/EricVicenti">twitter</a>
+					<a class="ss-icon ss-social-circle" href="http://www.linkedin.com/in/evicenti">linkedin</a>
+					<a class="ss-icon ss-social-circle" href="mailto:ericvicenti@gmail.com" target="_blank">email</a>
+				</div>
+			</div>
+			<div class="pane">
+				<div class="title">Open Network Status</div>
+				<div class="info">The open protocol this blog connects to will be announced on Friday November 16th</div>
+			</div>
+			<div class="pane">
+				<div class="title">Open Blog Status</div>
+				<div class="info">This open source blog application will be officially released on Monday the 18th. It will be the first open source application which can link to the forthcoming protocol.</div>
+			</div>
+		</div>
 	</div>
 	<div class="footer">
 		<p class="copyright"><%=locals.user ? ('Hello, '+locals.user.name+'<br />') : '' %> &copy; 2012 Eric Vicenti. <%=locals.user ? '<br />' : '-' %> <a href="/pages"><%=locals.user ? 'Manage' : 'Login' %></a><%=locals.user ? ' - <a href="/logout">Log Out</a>' : '' %></p>

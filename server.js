@@ -34,10 +34,11 @@ app.use(express.session({
 
 // Stop here if they are requesting the wrong host
 app.use(function(req, res, next){
+	res.locals.meta = settings.meta;
 	if((settings.host+(settings.displayPort ? ':'+settings.displayPort : '')) == req.headers.host){
 		next();
 	} else if(('www.'+settings.host+(settings.displayPort ? ':'+settings.displayPort : '')) == req.headers.host){
-		next();
+		res.redirect('//'+settings.host+req.url);
 	} else {
 		res.send('');
 	}
