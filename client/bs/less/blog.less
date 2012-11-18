@@ -75,7 +75,7 @@ div#banner
 {
   background-image: url('/img/openbook.png');
   width: 237px;
-  height: 260px;
+  height: 270px;
   float: left;
 }
 div#summary
@@ -329,16 +329,30 @@ blockquote p
       background-image: url('/img/eric.vicenti.jpg');
       height: 315px;
       width: 250px;
-      background-size: 250px 315px;
     }
   } 
 }
 
-@media only screen and (-webkit-min-device-pixel-ratio: 2), 
-only screen and (min-device-pixel-ratio: 2) {
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), 
+only screen and (min-device-pixel-ratio: 1.5) {
 
 .sidebar .person .image {
   background-image: url('/img/eric.vicenti.x2.jpg');
+  background-size: 250px 315px;
+}
+.alt
+{
+  background-image: url('/img/debut_dark/debut_dark.x2.png');
+  background-size: 200px 200px;
+}
+div#banner
+{
+  background-image: url('/img/openbook.x2.png');
+  background-size: 237px 270px;
+}
+body {
+  background-image: url('/img/creampaper/creampaper.x2.png');
+  background-size: 158px 144px;
 }
 
 }
