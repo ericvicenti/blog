@@ -92,6 +92,10 @@ div#summary
 {
   font-weight: bold;
 }
+.container.content
+{
+  padding: 20px;
+}
 .container.section
 {
   padding: 80px 50px 50px;
@@ -133,10 +137,11 @@ div.footer
 {
   text-align: center;
 }
-a.brand
+.navbar .brand
 {
-  padding: 10px 20px 10px 30px;
+  padding: 8px 20px 6px 30px;
 }
+
 pre
 {
   background-color: #4D3139;
@@ -333,6 +338,7 @@ blockquote p
   } 
 }
 
+
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), 
 only screen and (min-device-pixel-ratio: 1.5) {
 
@@ -357,6 +363,11 @@ body {
 
 }
 
+
+.navbar-fixed-top .navbar-inner, .navbar-fixed-bottom .navbar-inner {
+  padding: 0;
+}
+
 @media all and (max-width: 1220px){
   .sidebar {
     position: static;
@@ -366,12 +377,30 @@ body {
     margin: 0 auto;
   }
 }
+@media all and (max-width: 666px){
+.container.section.top
+{
+  padding-top: 0;
+}
+}
 @media all and (max-width: 580px){
 .container.section
   {
-    padding: 20px;
+  padding: 20px 20px 20px;
   }
   .sidebar {
     width: 270px;
   }
+}
+@media all and (max-width: 400px){
+div#summary
+{
+  color: @linkColor;
+  font-size: 28px;
+  line-height: 40px;
+  float: right;
+  width: 290px;
+  text-align: center;
+  margin-top: 30px;
+}
 }
