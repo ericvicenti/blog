@@ -35,9 +35,38 @@ function isPathUsed(path, callback){
 	});
 }
 
-function getPage(path, includeUnpublished, includeDraft, callback){
+function viewPage(path, callback){
+	// get the public version of a page from a path, which could include a version
+	console.log("page view");
+	console.log(path);
+	// the main row on the page needs to have published set in order to serve any version of the page
+	db.get("SELECT * FROM pages WHERE path=? AND published>0", [path], function(err, row) {
+		if(row) row.newVersion = row.version;
+		if(err || row==null){
+			var v = _.parseVersion(path);
+			if(v){
+				db.get("SELECT * FROM pages WHERE path=? published>0", [v.path], function(er, r) {
+					if(r) r.newVersion = r.version;
+					if(r && v.version == r.version) callback(er, r);
+					if(r && !er) getPageVersion(r, v.version, function(err, page){
+						// viewPage only returns published versions
+						if(!err && page && !page.published) callback('NotFound', null);
+						callback(err, page);
+					else callback(err, row)
+				});
+			} else {
+				callback(err, row);
+			}
+		} else if(callback){
+			callback('NotFound');
+		}
+	});
+}
+
+function previewPage(path, callback){
 	var limit = "";
 	if(!includeUnpublished) limit = " AND published>0";
+	console.log(arguments);
 	db.get("SELECT * FROM pages WHERE path=?"+limit, [path], function(err, row) {
 		if(row) row.newVersion = row.version;
 		if(err || row==null){
@@ -46,7 +75,7 @@ function getPage(path, includeUnpublished, includeDraft, callback){
 				db.get("SELECT * FROM pages WHERE path=?"+limit, [v.path], function(er, r) {
 					if(r) r.newVersion = r.version;
 					if(r && v.version == r.version) callback(er, r);
-					if(r && !er) getPageVersion(r, v.version, includeUnpublished, includeDraft, callback);
+					if(r && !er) getPageVersion(r, v.version, callback);
 					else callback(err, row)
 				});
 			} else {
@@ -69,8 +98,25 @@ function getPage(path, includeUnpublished, includeDraft, callback){
 	});
 }
 
-function getPageVersion(page, version, includeUnpublished, includeDraft, callback){
-	db.all("SELECT title, version, patch, time, published FROM history WHERE page=? AND version>=? ORDER BY version DESC",[page.path, version], function(err, rows){
+function getPageVersion(page, version, callback){
+	if(page.version == version){
+		if(callback) callback(null, page);
+		return;
+	}
+	console.log('getting page version')
+	console.log(arguments);
+	var minVersion, maxVersion, order;
+	if(version > page.version){
+		minVersion = page.version;
+		maxVersion = version;
+		order = "ASC";
+	} else {
+		minVersion = version;
+		maxVersion = page.version;
+		order = "DESC";
+	}
+	db.all("SELECT title, version, patch, time, published FROM history WHERE page=? AND version>=? AND version<=? ORDER BY version "+order, [page.path, minVersion, maxVersion], function(err, rows){
+		console.log(rows)
 		if(err)	callback(err, page);
 		var v = false;
 		_.each(rows,function(row){
@@ -78,14 +124,16 @@ function getPageVersion(page, version, includeUnpublished, includeDraft, callbac
 			page.body = _.compilePatch(page.body, row.patch);
 		});
 		if(!v) {
+			console.log('yeck')
 			callback('VersionNotFound', null);
 			return;
 		}
-		if(!includeUnpublished && (!v.published || !page.published)) return callback('Auth', null);
 		page.title = v.title;
 		page.time = v.time;
 		page.newVersion = page.version;
 		page.version = version;
+		console.log(page);
+		console.log(err);
 		callback(err, page);
 	});
 }
@@ -94,6 +142,8 @@ function addPage(title, body, published, callback, iter){
 	iter = iter ? iter : 0;
 	var path = '/'+_.slugify(title);
 	if(iter > 0) path += iter;
+	console.log('adding..');
+	console.log(arguments)
 	db.run("INSERT INTO pages (path, title, body, updated, published) VALUES (?, ?, ?, ?, ?)", [path, title, body, moment().unix(), published ? moment().unix() : null], function(err){
 		if(err && err.code=='SQLITE_CONSTRAINT'){
 			return addPage(title, body, published, callback, iter+1);
@@ -103,10 +153,13 @@ function addPage(title, body, published, callback, iter){
 }
 
 function postVersion(path, title, body, published, callback){
-	getPage(path, true, function(err, page){
-		var version = page.version + 1,
-			oldVersion = page.version ? page.version : 0;
-		var patch = _.createPatch(body, page.body);
+	console.log('saving the version!!!');
+	console.log(arguments)
+	getPage(path, true, false, function(err, page){
+		db.get("SELECT version FROM history ORDER BY version DESC LIMIT 1", function(err, v){
+		var version = ((v && (v.version>page.version)) ? v.version : page.version ) + 1,
+			patch = _.createPatch(body, page.body);
+		console.log("VERSION IS "+version);
 		published = published ? (page.published ? page.published : moment().unix()) : null;
 		function addToHistory(version){
 			db.run("INSERT OR REPLACE INTO history (time, title, patch, searchable, page, version, published) VALUES (?, ?, ?, ?, ?, ?, ?)", [
@@ -130,7 +183,7 @@ function postVersion(path, title, body, published, callback){
 					version,
 					path
 				],function(er){
-					addToHistory(oldVersion);
+					addToHistory(version - 1);
 				});
 			} else {
 				db.run("UPDATE pages SET draft=?, WHERE path=?", [
@@ -149,9 +202,10 @@ function postVersion(path, title, body, published, callback){
 				version,
 				path
 			],function(er){
-				addToHistory(oldVersion);
+				addToHistory(version - 1);
 			});	
 		}
+		});
 	});
 }
 
@@ -217,7 +271,8 @@ module.exports = {
 	isPathUsed: isPathUsed,
 	getPages: getPages,
 	getPageList: getPageList,
-	getPage: getPage,
+	viewPage: viewPage,
+	previewPage: previewPage,
 	setFeedback: setFeedback,
 	postVersion: postVersion,
 	addPage: addPage,

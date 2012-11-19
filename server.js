@@ -84,6 +84,7 @@ app.get('/pages/new', function(req,res){
 app.post('/pages/new', function(req,res){
 	var page = req.body;
 	page.published = page.submit=="Publish";
+	console.log('here we go..')
 	db.addPage(page.title, page.body, page.published, function(err, path){
 		res.redirect((page.published ? '' : '/preview')+path);
 	});
@@ -102,7 +103,12 @@ app.get('/edit*', function(req,res){
 		}));
 	});
 });
+<<<<<<< Updated upstream
 app.post('/edit*', function(req,res){
+=======
+app.post('/edit*', auth.requireVerifiedAuth, function(req,res){
+	console.log("got a post");
+>>>>>>> Stashed changes
 	var path = req.url.split('/edit')[1];
 	var page = req.body;
 	page.published = page.submit=="Publish";
@@ -111,6 +117,7 @@ app.post('/edit*', function(req,res){
 			res.redirect('/pages');
 		});
 	}
+	console.log("posting version");
 	db.postVersion(path, page.title, page.body, page.published, function(){
 		res.redirect((page.published ? "" : "/preview")+path);
 	});
