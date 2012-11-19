@@ -1,26 +1,68 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 	<title><%=title%></title>
-	<link rel="stylesheet" type="text/css" href="/css/readable.css" />
-	<link rel="stylesheet" type="text/css" href="/css/style.css" />
+	<link rel="stylesheet" type="text/css" href="/bs/less/blog.css" />
+	<link href='//fonts.googleapis.com/css?family=Scada:400italic,700italic,400,700' rel='stylesheet' type='text/css'>
+    <link href="/font/ss-social.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="<%=locals.meta.author%>">
+    <meta name="description" content="<%=locals.meta.description%>">
 </head>
 <body>
 	<div class="navbar navbar-fixed-top">
 	  <div class="navbar-inner">
 	  	<div class="container">
-		    <a class="brand" href="/">Blog</a>
-		    <ul class="nav">
-		      <li class=""><a href="/">Home</a></li>
-		      <li class=""><a href="/pages">Pages</a></li>
-		    </ul>
+		    <a class="brand" href="/"><%=name%></a>
+            <ul class="nav pull-right">
+                <li class="active"><a href="/">Blog</a></li>
+                <li><a href="/OpenBook.html">OpenBook</a></li>
+                <li><a href="https://github.com/ericvicenti/OpenBook" target="_blank"><i class="ss-icon">&#xF671;</i> Protocol</a></li>
+            </ul>
 		</div>
 	  </div>
 	</div>
-	<div class="container">
+	<div class="container content">
 		<%=content%>
+		<div class="sidebar">
+			<div class="person pane">
+				<div class="image">
+					<div class="title">About Eric Vicenti</div>
+				</div>
+				<div class="info">Eric is an Entrepreneur and Web Engineer, working for <a href="http://trap.it/" target="_blank">TrapIt</a> in Palo Alto. Passionate about UI, intelligence networking, and robots.</div>
+				<div class="social">
+					<a class="ss-icon ss-social-circle" href="http://github.com/ericvicenti">githuboctocat</a>
+					<a class="ss-icon ss-social-circle" href="http://twitter.com/EricVicenti">twitter</a>
+					<a class="ss-icon ss-social-circle" href="http://www.linkedin.com/in/evicenti">linkedin</a>
+					<a class="ss-icon ss-social-circle" href="mailto:ericvicenti@gmail.com" target="_blank">email</a>
+				</div>
+			</div>
+			<div class="pane">
+				<div class="title">OpenBook Status</div>
+				<div class="info">The protocol has been <a href="/OpenBook.html">introduced</a> and will soon be implemented in this blog. Stay posted!</div>
+			</div>
+			<div class="pane">
+				<div class="title">Open Blog Status</div>
+				<div class="info">This blog application will be officially open-sourced on Monday the 18th. It will be the one of the first open source applications that can link to OpenBook.</div>
+			</div>
+		</div>
+	</div>
+	<div class="footer">
+		<p class="copyright"><%=locals.user ? ('Hello, '+locals.user.name+'<br />') : '' %> &copy; 2012 Eric Vicenti. <%=locals.user ? '<br />' : '-' %> <a href="/pages"><%=locals.user ? 'Manage' : 'Login' %></a><%=locals.user ? ' - <a href="/logout">Log Out</a>' : '' %></p>
 	</div>
 	<script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.2.min.js"></script>
 	<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js"></script>
+<!-- GAE -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', '<%=locals.gaKey%>']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
 </body>
 </html>

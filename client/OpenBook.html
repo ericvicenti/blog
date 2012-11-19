@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OpenBook Overview</title>
+    <link rel="stylesheet" type="text/css" href="/bs/less/blog.css" />
+    <link href='//fonts.googleapis.com/css?family=Scada:400italic,700italic,400,700' rel='stylesheet' type='text/css'>
+    <link href="/font/ss-social.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Eric Vicenti">
+    <meta name="description" content="We are freeing the social web with a distributed social network protocol. Join the open content revolution, and set your users free!">
+</head>
+<body data-spy="scroll" data-target="#scrollNav">
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+            <a class="brand" href="/">Project Open Content</a>
+            <ul class="nav pull-right">
+                <li><a href="/">Blog</a></li>
+                <li class="active"><a href="/OpenBook.html">OpenBook</a></li>
+                <li><a href="https://github.com/ericvicenti/OpenBook" target="_blank"><i class="ss-icon">&#xF671;</i> Protocol</a></li>
+            </ul>
+        </div>
+      </div>
+      <div class="navbar-inner subnav">
+        <div class="container" id="scrollNav">
+            <ul class="nav">
+                <li><a href="#identity-security">Security</a></li>
+                <li><a href="#publishing">Publishing</a></li>
+                <li><a href="#posting">Posting</a></li>
+            </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container section top">
+        <div id="banner"></div>
+        <div id="summary">OpenBook is a flexible and minimal <b>distributed social protocol</b></div>
+	</div>
+	<div class="alt">
+	<div class="container section" id="identity-security">
+        <h2>Identity and Security</h2>
+
+        <p>User names are synonymous with domain names on OpenBook, and that lets us verify peers with traditional SSL certificate chains. The SSL layer in HTTPS verifies the identity of your peer using trusted servers called Certificate Authorities.</p>
+
+        <p>If a sub-domain fails SSL domain authentication, the parent domain can be used as a fallback. This way, most social networks will only need one secure key, while more advanced networks can let their users each have their own secure key-pair.</p>
+	</div>
+	</div>
+	<div class="container section" id="publishing">
+        <h2>Content Publishing</h2>
+
+        <p>Pages, like on the web, are addressed by paths on their respective servers. If I wanted to get a page from the president, I might request:</p>
+
+        <pre><code>https://obama.whitehouse.gov/2013/state-of-the-union</code></pre>
+
+        <p>OpenBook links are intentionally indistinguishable from HTTPS web links. This allows applications to fall back on browsers to display links which can't be read as OpenBook pages.</p>
+
+        <span id="pages">
+	        <h3>Pages</h3>
+
+	        <p>Pages are the only unit of content on OpenBook. Pages can be located at any path on a peer, but every peer should at least make one page available at their root path, <code>/</code>. </p>
+
+	        <p>Pages contain the following, encoded in JSON, when they are retrieved:</p>
+
+	        <ul>
+	        <li>Title</li>
+	        <li>Time last updated</li>
+	        <li>Markdown Body</li>
+	        <li>Optional link to context where this was posted</li>
+	        <li>Optional link to previous version</li>
+	        <li>Optional link to updated/ newer version</li>
+	        </ul>
+
+
+	        <p>The most critical capability is the ability for a page to link to additional OpenBook content. This is done with normal links so that bi-directional fallbacks can be enabled. When an https link is published, the link is expected to be either a normal https website, an OpenBook page, or both. It is up to the reader to follow and interpret the links as they wish.</p>
+
+	        <p>Content is formatted in Markdown, which, like OpenBook, is a work in progress. OpenBook will select a specification of Markdown as the appropriate dialect emerges.</p>
+	    </span>
+	</div>
+	<div class="alt">
+	<div class="container section" id="posting">
+
+        <h2>OpenBook Posting</h2>
+
+        <p>An OpenBook POST sets aspects about the relationship of the sender to the receiving page. A POST can set any of the following:</p>
+
+        <ul>
+        <li>A link to a fork</li>
+        <li>A link to a post or response</li>
+        <li>Feedback/Opinions about links on the page</li>
+        <li>A subscription link where updates should be sent to</li>
+        </ul>
+
+
+        <p>When any of these attributes are included in a post, the values should override the existing state.</p>
+
+        <p>An OpenBook post is also used to transmit 'notification', which is a fufillment of a subscription. These are one-time events unlike the other attributes which are settable relationships between the sender of the POST and the recipient page.</p>
+
+        <h3>Sending Responses and Forks</h3>
+
+        <p>To respond to content, make it available to GET on your server (publish it first). If this server is in response to some particular content and/or is forked from a particular page, link to it appropriately from the page.</p>
+
+        <p>Next, send the link of the new page to the page you have forked or are responding to. Include the URL of your new page in the appropriate <code>post</code> or <code>fork</code> field.</p>
+
+        <h3>Feedback, "Opinions"</h3>
+
+        <p>Feedback is sent in the form of opinions, which is a string that is either 'like','dislike' or 'report'. An empty string represents the lack of an opinion. Opinions can be sent about any link on the page, including traditional links as well as links to OpenBook pages. Embedded content like images cannot be targeted as it is considered part of the page's content. However, the opinion of the whole page can be sent by setting the opinion of the empty string target.</p>
+
+        <p>Say I want to some feedback to a page, providing positive feedback about one link and a severe report about another. I would send an ojbect of opinions, with the exact href of the links as the keys and 'like', 'report' as my respective values. I might include an extra 'like' with an empty string as the key, if I wanted to give the whole page positive feedback.</p>
+
+        <h3>Subscription</h3>
+
+        <p>If one peer is interested in a page, she can subscribe, and she will expect that page to notify her when it changes. In order to subscribe, needs to set the 'subscription' attribute in the POST she sends to the page. She sets the subscription attribute to a path on her server.</p>
+
+        <p>Now, when that page changes, it should send her a POST with a notification. The notification value that gets sent is equal to the page's path, so our user can identify which page is announcing its update.</p>
+
+        <h3>Bulk Posts</h3>
+
+        <p>Lastly, to enable large social networks to grow, POSTs can be sent in bulk. This allows large social     networks to communicate on behalf of their users quite efficiently.</p>
+    </div>
+	</div>
+	<div class="footer">
+		<p class="copyright">&copy; 2012 Eric Vicenti.</p>
+	</div>
+	<script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.2.min.js"></script>
+	<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js"></script>
+	<script src="/js/bootstrap-scrollspy.js"></script>
+	<script src="/js/jquery.scrollto.js"></script>
+<script type="text/javascript">
+$('#scrollNav a').click(function(e){
+	e.preventDefault();
+	$($(e.target).attr('href')).ScrollTo();
+});
+</script>
+<!-- GAE -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-36357660-1']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</body>
+</html>

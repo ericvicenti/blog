@@ -8,7 +8,7 @@ function getPageList(limit, offset, callback){
 	limit = limit ? limit : settings.defaultRowLimit;
 	limit = (settings.maxRowLimit<limit) ? settings.maxRowLimit : limit;
 	offset = offset ? Number(offset) : 0;
-	db.all("SELECT path, title, updated, published, draft FROM pages LIMIT $limit OFFSET $offset", {
+	db.all("SELECT path, title, updated, published FROM pages LIMIT $limit OFFSET $offset", {
 		"$limit": limit,
 		"$offset": offset
 	}, function(err, rows) {
@@ -82,15 +82,22 @@ function previewPage(path, callback){
 				callback(err, row);
 			}
 		} else if(callback){
-			if(includeDraft && row.draft){
-				db.get("SELECT * FROM history WHERE path=? AND version=?;", [
-						path,
-						row.version + 1
-					], function(err, v){
-						row.title = v.title;
-						row.body = _.compilePatch(row.body, v.patch);
-						row.time = v.time;
-						row.version = v.version;
+			if(includeDraft){
+				db.all("SELECT * FROM history WHERE path=? ORDER BY version ASC", [
+						path
+					], function(err, versions){
+						_.each(versions, function(v){
+							if(v.version>row.version){
+								row.body = _.compilePatch(row.body, v.patch);
+								row.title = v.title;
+								row.time = v.time;
+								row.version = v.version;
+							}
+						});
+						if(!includeUnpublished){
+							versions = _.filter(versions, function(v){ return v.published });
+						}
+						row.versions = versions;
 						callback(err, row);
 					});
 			} else callback(err, row);
@@ -162,11 +169,10 @@ function postVersion(path, title, body, published, callback){
 		console.log("VERSION IS "+version);
 		published = published ? (page.published ? page.published : moment().unix()) : null;
 		function addToHistory(version){
-			db.run("INSERT OR REPLACE INTO history (time, title, patch, searchable, page, version, published) VALUES (?, ?, ?, ?, ?, ?, ?)", [
+			db.run("INSERT OR REPLACE INTO history (time, title, patch, page, version, published) VALUES (?, ?, ?, ?, ?, ?, ?)", [
 				page.updated,
 				page.title,
 				patch.patch,
-				patch.searchable,
 				path,
 				version,
 				published ? moment().unix() : false
@@ -229,7 +235,6 @@ CREATE TABLE pages \
 	body TEXT NOT NULL,\
 	updated INT NOT NULL,\
 	published INT,\
-	draft INT NOT NULL DEFAULT 0,\
 	version INTEGER NOT NULL DEFAULT 0\
 );", function(err){ // we don't care about err, cause there is probably already a table
 db.run("\
@@ -249,11 +254,10 @@ CREATE TABLE history\
 	time INT NOT NULL,\
 	title TEXT NOT NULL,\
 	published INT,\
-	searchable TEXT,\
 	patch TEXT,\
 	page TEXT NOT NULL,\
 	version INTEGER NOT NULL DEFAULT 0,\
-	FOREIGN KEY(page) REFERENCES pages(path)\
+	FOREIGN KEY(page) REFERENCES pages(path) ON DELETE CASCADE\
 );", function(err){ // we don't care about err, cause there is probably already a table
 	  db.run("\
 	CREATE UNIQUE INDEX IF NOT EXISTS version ON history\
