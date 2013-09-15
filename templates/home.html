@@ -7,7 +7,7 @@
 			Last updated <%=_.moment.unix(page.updated).from()%>.
 		<% } %></small>
 	</h2>
-	<%=_.showdown(page.body)%>
+	<%=_.markshow(page.body)%>
 	<hr>
 <% }); %>
 

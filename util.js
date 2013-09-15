@@ -2,9 +2,8 @@ var _ = require("underscore");
 var settings = require("./settings.js");
 var moment = require("moment");
 var diff = require("diff");
-var Showdown = require('showdown');
-var converter = new Showdown.converter();
 var postmark = require("postmark")(settings.postmarkAPIKey);
+var MarkShow = require('markshow');
 
 _.mixin({
 	endsWith: function(str, end){
@@ -14,7 +13,7 @@ _.mixin({
 });
 _.mixin({
 	diff: diff,
-	showdown: converter.makeHtml,
+	markshow: new MarkShow(),
 	createPatch: function(startStr, destStr){
 		var patch = diff.createPatch('asdf.txt',startStr,destStr);
 		var searchable = [];

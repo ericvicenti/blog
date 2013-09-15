@@ -9,7 +9,7 @@
     "querystring": "~0.1.0",
     "moment": "~1.7.2",
     "diff": "~1.0.4",
-    "showdown": "~0.3.1",
+    "markshow": "",
     "postmark": "~0.1.6"
   },
   "engines": {
