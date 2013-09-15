@@ -13,7 +13,7 @@ _.mixin({
 });
 _.mixin({
 	diff: diff,
-	markshow: new MarkShow(),
+	markshow: (new MarkShow()).makeHtml,
 	createPatch: function(startStr, destStr){
 		var patch = diff.createPatch('asdf.txt',startStr,destStr);
 		var searchable = [];
