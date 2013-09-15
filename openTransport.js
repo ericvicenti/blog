@@ -8,13 +8,18 @@ var db = require('./db.js');
 
 // HTTPS Client
 var pfxPath = settings.pfx
-settings.pfx = fs.readFileSync(pfxPath);
+var pfx = fs.readFileSync(pfxPath);
 var agent = new https.Agent({
   requestCert: true,
-  pfx: settings.pfx,
+  pfx: pfx,
   password: settings.pfxPassword
 });
-function sendRequest(opts,cb){
+
+function sendRequest(opts, data, cb){ // data is optional
+  if(_.isFunction(data)) {
+    cb = data;
+    data = null;
+  }
   var opts = _.extend({
     agent: agent,
     port: 443
@@ -28,19 +33,23 @@ function sendRequest(opts,cb){
       cb(res);
     });
   });
+  if(_.isObject(data)){
+    req.setHeader('Content-Type','application/json');
+    req.write(JSON.stringify(data));
+  }
   req.end();
   return req;
 }
 
 var get = function(host, path, callback){
   sendRequest({
-    host: host,
+    hostname: host,
     path: path,
     method: 'GET'
   }, callback);
 }
 
-var post = function(host, path, opts, callback){
+var post = function(host, path, post, callback){
   var data = {
     subject: opts.subject,
     opinion: opts.opinion,
@@ -48,10 +57,10 @@ var post = function(host, path, opts, callback){
     modification: opts.modification
   }
   sendRequest({
-    host: host,
+    hostname: host,
     path: path,
-    method: 'GET'
-  }, callback);
+    method: 'POST'
+  }, data, callback);
 }
 
 var errors = {
