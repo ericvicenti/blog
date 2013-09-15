@@ -98,11 +98,12 @@ module.exports = function(req, res, next){
   function sendBody(body){
     res.send(200, body);
   }
-  console.log('req.headers.OpenBookVersion: ');
+  _.log('req.headers.OpenBookVersion: ', req.headers.OpenBookVersion);
   if(req.headers.OpenBookVersion){
     if(req.method == 'POST') {
-      console.log('GOT A POST');
-      console.log(req.body);
+      _.log('GOT A POST');
+      _.log(req.body);
+      sendBody({ whats: 'up?' });
     } else if(req.method == 'GET') {
       db.getPage(req.url, false, false, function(err, page){
         if(err) return sendError('404_00');

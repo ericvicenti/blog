@@ -10,7 +10,8 @@
     "moment": "~1.7.2",
     "diff": "~1.0.4",
     "markshow": "",
-    "postmark": "~0.1.6"
+    "postmark": "~0.1.6",
+    "winston": "0.7.x"
   },
   "engines": {
     "node": "0.8.x",

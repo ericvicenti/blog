@@ -4,6 +4,19 @@ var moment = require("moment");
 var diff = require("diff");
 var postmark = require("postmark")(settings.postmarkAPIKey);
 var MarkShow = require('markshow');
+var winston = require('winston');
+
+var logger = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({ json: false, timestamp: true }),
+    new winston.transports.File({ filename: '/home/blog/app_debug.log', json: false })
+  ],
+  exceptionHandlers: [
+    new (winston.transports.Console)({ json: false, timestamp: true }),
+    new winston.transports.File({ filename: '/home/blog/app_exceptions.log', json: false })
+  ],
+  exitOnError: false
+});
 
 _.mixin({
 	endsWith: function(str, end){
@@ -12,6 +25,7 @@ _.mixin({
 	}
 });
 _.mixin({
+	log: logger.info,
 	diff: diff,
 	markshow: (new MarkShow()).makeHtml,
 	createPatch: function(startStr, destStr){

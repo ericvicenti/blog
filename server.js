@@ -45,7 +45,7 @@ app.use(function(req, res, next){
 	}
 });
 
-app.use(require('./openTransport.js'))
+app.use(require('./openTransport'));
 
 app.get('/login', function(req, res){
 	res.send(render.index({
