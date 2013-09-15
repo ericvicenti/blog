@@ -1,4 +1,5 @@
 
+var _ = require("./util");
 var fs = require("fs");
 var https = require("https");
 var settings = require("./settings.js");
@@ -70,7 +71,7 @@ var errors = {
   _500_01 : { message: 'Database Error' }
 }
 
-function parseErrorId: function(e){
+function parseErrorId(e){
   var parts = e.split('_');
   var bigCode = parts[1];
   var littleCode = parts[2];
