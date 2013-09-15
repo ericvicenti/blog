@@ -6,7 +6,10 @@ var _ = require('./util.js'),
   crypto = require('crypto'),
   auth = require('./auth.js'),
   settings = require("./settings.js"),
-  db = require('./db.js');
+  db = require('./db.js'),
+  httpProxy = require('http-proxy');
+
+var proxy = new httpProxy.RoutingProxy();
 
 var reservedPathFirstTerms = ['login','pages','edit','preview']; //TODO: check this.
 
@@ -41,17 +44,14 @@ app.use(function(req, res, next){
   } else if(('www.'+settings.host+(settings.displayPort ? ':'+settings.displayPort : '')) == req.headers.host){
     res.redirect('//'+settings.host+req.url);
   } else {
-    if(req.method == 'GET'){
-      var host = _.find(settings.hosts, function(host){
-        return host.name == req.headers.host;
+    var host = _.find(settings.hosts, function(host){
+      return host.name == req.headers.host;
+    });
+    if(host) {
+      proxy.proxyRequest(req, res, {
+        host: 'localhost',
+        port: host.port
       });
-      if(host) {
-        _.request.get({
-          url: 'http://localhost:' + host.port + req.url
-        }, function(error, response, body){
-          res.send(response.statusCode, body);
-        });
-      } else return res.send(400);
     } else return res.send(400);
   }
 });
