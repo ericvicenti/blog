@@ -98,8 +98,7 @@ module.exports = function(req, res, next){
   function sendBody(body){
     res.send(200, body);
   }
-  _.log('req.headers.OpenBookVersion: ', req.headers.OpenBookVersion);
-  if(req.headers.OpenBookVersion){
+  if(req.headers.openbookversion){
     if(req.method == 'POST') {
       _.log('GOT A POST');
       _.log(req.body);
