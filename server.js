@@ -45,53 +45,7 @@ app.use(function(req, res, next){
 	}
 });
 
-// HTTPS Client
-var pfxPath = settings.pfx
-settings.pfx = fs.readFileSync(pfxPath);
-var agent = new https.Agent({
-	requestCert: true,
-	pfx: settings.pfx,
-	password: settings.pfxPassword
-});
-function sendRequest(opts,cb){
-	var opts = _.extend({
-		agent: agent,
-		port: 443
-	}, opts);
-	var req = new https.request(opts, function(res){
-		res.body = '';
-		res.on('data', function(a){
-			res.body += a;
-		});
-		res.on('end', function(){
-			cb(res);
-		});
-	});
-	req.end();
-	return req;
-}
-
-var get = function(host, path, callback){
-	sendRequest({
-		host: host,
-		path: path,
-		method: 'GET'
-	}, callback);
-}
-
-var post = function(host, path, opts, callback){
-	var data = {
-		subject: opts.subject,
-		opinion: opts.opinion,
-		response: opts.response,
-		modification: opts.modification
-	}
-	sendRequest({
-		host: host,
-		path: path,
-		method: 'GET'
-	}, callback);
-}
+app.use(require('./openTransport.js'))
 
 app.get('/login', function(req, res){
 	res.send(render.index({
