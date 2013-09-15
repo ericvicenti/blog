@@ -5,6 +5,7 @@ var diff = require("diff");
 var postmark = require("postmark")(settings.postmarkAPIKey);
 var MarkShow = require('markshow');
 var winston = require('winston');
+_.request = require("request");
 
 var logger = new (winston.Logger)({
   transports: [

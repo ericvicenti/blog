@@ -11,7 +11,8 @@
     "diff": "~1.0.4",
     "markshow": "",
     "postmark": "~0.1.6",
-    "winston": "0.7.x"
+    "winston": "0.7.x",
+    "request": "2.x.x"
   },
   "engines": {
     "node": "0.8.x",
