@@ -7,8 +7,7 @@ var db = require('./db.js');
 
 
 // HTTPS Client
-var pfxPath = settings.pfx
-var pfx = fs.readFileSync(pfxPath);
+var pfx = fs.readFileSync(settings.pfx);
 var agent = new https.Agent({
   requestCert: true,
   pfx: pfx,

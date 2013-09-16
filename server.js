@@ -239,8 +239,9 @@ _.each(settings.hosts, function(host){
 });
 var httpsServer = false;
 if(settings.securePort){
+  var pfx = fs.readFileSync(settings.pfx);
   var opts = {
-    pfx: settings.pfx,
+    pfx: pfx,
     password: settings.pfxPassword,
     requestCert: true,
     SNICallback: function(host){
