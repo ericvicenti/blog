@@ -26,7 +26,7 @@ function sendRequest(opts, data, cb){
     agent: agent,
     port: 443
   }, opts);
-  
+
   // init the request
   var req = new https.request(opts, function(res){
     // the request has been made by here. start collecting the response
@@ -117,6 +117,11 @@ module.exports = function(req, res, next){
   function sendBody(body){
     res.send(200, body);
   }
+  function authenticatePeer(){
+    console.log(req.connection.remoteAddress);
+    console.log(req.connection.authorized);
+  }
+
   if(req.headers.openbookversion){
     if(req.method == 'POST') {
       _.log('GOT A POST');
