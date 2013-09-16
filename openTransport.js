@@ -15,29 +15,39 @@ var agent = new https.Agent({
   password: settings.pfxPassword
 });
 
-function sendRequest(opts, data, cb){ // data is optional
+function sendRequest(opts, data, cb){
+  // (opts, [data,] callback) {
   if(_.isFunction(data)) {
     cb = data;
     data = null;
   }
+
   var opts = _.extend({
     agent: agent,
     port: 443
   }, opts);
+  
+  // init the request
   var req = new https.request(opts, function(res){
+    // the request has been made by here. start collecting the response
     res.body = '';
     res.on('data', function(a){
       res.body += a;
     });
     res.on('end', function(){
+      // fully responded. call back!
       cb(res);
     });
   });
+  // write the request
   if(_.isObject(data)){
     req.setHeader('Content-Type','application/json');
     req.write(JSON.stringify(data));
   }
+  // end the request
   req.end();
+
+  // return in case somebody needs this for some reason
   return req;
 }
 
